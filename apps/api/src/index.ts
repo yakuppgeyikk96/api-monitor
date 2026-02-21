@@ -1,6 +1,9 @@
 import fastify from "fastify";
+import dbPlugin from "./plugins/db.js";
 
 const server = fastify();
+
+server.register(dbPlugin);
 
 server.get("/ping", async () => {
   return { pong: true };
