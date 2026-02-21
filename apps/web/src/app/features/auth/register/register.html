@@ -1,0 +1,41 @@
+<div class="register-container">
+  <div class="w-full max-w-md rounded-2xl bg-white p-8 shadow-lg">
+    <div class="mb-8 text-center">
+      <h1 class="text-2xl font-bold text-gray-900">API Monitor</h1>
+      <p class="mt-2 text-sm text-gray-600">Create an account and start monitoring your APIs</p>
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" class="flex flex-col gap-5">
+      <app-input
+        label="Full Name"
+        type="text"
+        placeholder="Enter your name"
+        [error]="getError('fullName')"
+        formControlName="fullName"
+      />
+
+      <app-input
+        label="Email"
+        type="email"
+        placeholder="you@example.com"
+        [error]="getError('email')"
+        formControlName="email"
+      />
+
+      <app-input
+        label="Password"
+        type="password"
+        placeholder="At least 8 characters"
+        [error]="getError('password')"
+        formControlName="password"
+      />
+
+      <app-button label="Sign Up" type="submit" variant="primary" [disabled]="false" [loading]="false" />
+    </form>
+
+    <p class="mt-6 text-center text-sm text-gray-600">
+      Already have an account?
+      <a [routerLink]="loginPath" class="font-semibold text-indigo-600 hover:text-indigo-500">Sign In</a>
+    </p>
+  </div>
+</div>
