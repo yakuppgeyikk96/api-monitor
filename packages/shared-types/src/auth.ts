@@ -5,7 +5,13 @@ export interface AuthUser {
   avatarUrl: string | null;
 }
 
-export interface AuthResult {
-  token: string;
-  user: AuthUser;
+export interface RegisterInput {
+  email: string;
+  password: string;
+  fullName: string;
+}
+
+export interface LoginInput {
+  email: string;
+  password: string;
 }

@@ -9,7 +9,14 @@ async function jwtPlugin(fastify: FastifyInstance) {
     sign: {
       expiresIn: JWT_CONFIG.expiresIn,
     },
+    cookie: {
+      cookieName: JWT_CONFIG.cookieName,
+      signed: false,
+    },
   });
 }
 
-export default fp(jwtPlugin, { name: "jwt" });
+export default fp(jwtPlugin, {
+  name: "jwt",
+  dependencies: ["cookie"],
+});

@@ -1,5 +1,6 @@
 import fastify from "fastify";
 import dbPlugin from "./plugins/db.js";
+import cookiePlugin from "./plugins/cookie.js";
 import jwtPlugin from "./plugins/jwt.js";
 import authPlugin from "./plugins/auth.js";
 import authRoutes from "./modules/auth/auth.routes.js";
@@ -10,6 +11,7 @@ import { ErrorCode } from "@repo/shared-types/errors";
 const server = fastify();
 
 server.register(dbPlugin);
+server.register(cookiePlugin);
 server.register(jwtPlugin);
 server.register(authPlugin);
 

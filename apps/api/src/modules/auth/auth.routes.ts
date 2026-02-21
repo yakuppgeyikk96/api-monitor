@@ -1,12 +1,20 @@
 import type { FastifyInstance } from "fastify";
 import { createUserRepository } from "../users/user.repository.js";
 import { createAuthService } from "./auth.service.js";
+import { JWT_CONFIG } from "../../common/jwt.js";
 import {
   RegisterBodySchema,
   LoginBodySchema,
   type RegisterBody,
   type LoginBody,
 } from "./auth.schema.js";
+
+const COOKIE_OPTIONS = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production",
+  sameSite: "lax" as const,
+  path: "/",
+};
 
 export default async function authRoutes(fastify: FastifyInstance) {
   const userRepository = createUserRepository(fastify.db);
@@ -16,17 +24,32 @@ export default async function authRoutes(fastify: FastifyInstance) {
     "/register",
     { schema: { body: RegisterBodySchema } },
     async (request, reply) => {
-      const result = await authService.register(request.body);
-      reply.code(201).send({ success: true, data: result });
+      const { token, user } = await authService.register(request.body);
+      reply
+        .setCookie(JWT_CONFIG.cookieName, token, COOKIE_OPTIONS)
+        .code(201)
+        .send({ success: true, data: user });
     },
   );
 
   fastify.post<{ Body: LoginBody }>(
     "/login",
     { schema: { body: LoginBodySchema } },
-    async (request) => {
-      const result = await authService.login(request.body);
-      return { success: true, data: result };
+    async (request, reply) => {
+      const { token, user } = await authService.login(request.body);
+      reply
+        .setCookie(JWT_CONFIG.cookieName, token, COOKIE_OPTIONS)
+        .send({ success: true, data: user });
+    },
+  );
+
+  fastify.post(
+    "/logout",
+    { preHandler: [fastify.authenticate] },
+    async (_request, reply) => {
+      reply
+        .clearCookie(JWT_CONFIG.cookieName, COOKIE_OPTIONS)
+        .send({ success: true, data: null });
     },
   );
 

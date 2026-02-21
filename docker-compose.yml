@@ -23,6 +23,7 @@ services:
       - "3001:3001"
     volumes:
       - ./apps/api/src:/app/apps/api/src
+      - ./packages/shared-types/src:/app/packages/shared-types/src
     depends_on:
       db:
         condition: service_healthy

@@ -1,20 +1,14 @@
 import type { FastifyInstance } from "fastify";
-import type { AuthResult, AuthUser } from "@repo/shared-types/auth";
+import type { AuthUser, RegisterInput, LoginInput } from "@repo/shared-types/auth";
 import { ErrorCode, ErrorMessage } from "@repo/shared-types/errors";
 import type { UserRepository } from "../users/user.repository.js";
 import type { JwtPayload } from "../../common/jwt.js";
 import { AuthError } from "../../common/errors.js";
 import { hashPassword, verifyPassword } from "../../common/password.js";
 
-interface RegisterInput {
-  email: string;
-  password: string;
-  fullName: string;
-}
-
-interface LoginInput {
-  email: string;
-  password: string;
+interface AuthResult {
+  token: string;
+  user: AuthUser;
 }
 
 export function createAuthService(
