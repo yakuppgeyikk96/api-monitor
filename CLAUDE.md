@@ -60,6 +60,36 @@ All API endpoints must return a consistent JSON structure:
 - Error responses include `error.code` (UPPER_SNAKE_CASE) and `error.message`
 - Never return raw data without the wrapper
 
+## Angular Conventions
+
+- **Angular 21** — standalone components by default, zoneless, Vite-based build
+- **Project structure**: Feature-based — `core/`, `shared/`, `features/`
+- **File naming**: No suffixes — `dashboard.ts` not `dashboard.component.ts`, `auth-api.ts` not `auth.service.ts`
+- **Components**: Standalone (default), use `inject()` for DI, `signal()` for state
+- **Template control flow**: `@if`, `@for`, `@switch` — NOT `*ngIf`/`*ngFor`
+- **Routing**: Lazy loading with `loadComponent` / `loadChildren`
+- **State management**: Signal-based services (no NgRx)
+- **HTTP**: Functional interceptors, `withCredentials: true` for cookie auth
+- **Auth**: HttpOnly cookie — no token in localStorage, functional guard + interceptor
+- **Styling**: Tailwind CSS 4 + SCSS
+- **Testing**: Vitest
+- **RxJS vs Signals**: RxJS for streams/orchestration, Signals for state/display
+
+### Frontend Structure
+
+```
+apps/web/src/app/
+├── core/           → Singleton services, auth, layout, interceptors
+├── shared/         → Reusable components, directives, pipes
+├── features/       → Feature modules (lazy-loaded)
+│   ├── auth/       → Login, register
+│   ├── dashboard/
+│   ├── services/
+│   ├── endpoints/
+│   └── settings/
+└── environments/   → Environment configs
+```
+
 ## Common Commands
 
 ```bash
