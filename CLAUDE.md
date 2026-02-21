@@ -39,6 +39,27 @@ Turborepo monorepo with pnpm workspaces.
 - Use `varchar` with explicit length limits, not `text`
 - Export `$inferInsert` and `$inferSelect` types from every schema file
 
+## API Response Format
+
+All API endpoints must return a consistent JSON structure:
+
+```jsonc
+// Success (single resource)
+{ "success": true, "data": { ... } }
+
+// Success (list with pagination)
+{ "success": true, "data": [ ... ], "meta": { "total": 100, "page": 1, "limit": 20 } }
+
+// Error
+{ "success": false, "error": { "code": "NOT_FOUND", "message": "User not found" } }
+```
+
+- Every response includes `success: boolean` at the top level
+- Success responses wrap the payload in `data`
+- List responses include a `meta` object with pagination info
+- Error responses include `error.code` (UPPER_SNAKE_CASE) and `error.message`
+- Never return raw data without the wrapper
+
 ## Common Commands
 
 ```bash
@@ -66,8 +87,19 @@ pnpm --filter @repo/api drizzle-kit studio     # Visual DB browser
 apps/
   api/          → Fastify backend (@repo/api)
   web/          → Angular frontend (@repo/web)
-packages/       → Shared configs (eslint, typescript)
+packages/
+  shared-types/ → Shared TypeScript types (@repo/shared-types) — response wrappers, error codes, entity types
+  eslint-config/→ Shared ESLint config
+  typescript-config/ → Shared TS config
 ```
+
+## Shared Types Strategy
+
+Frontend–backend type consistency is maintained via `@repo/shared-types` package:
+- API response wrapper types (`ApiResponse`, `PaginatedResponse`, `ApiError`)
+- Error code enums/constants
+- Shared entity types where both sides need the same shape
+- Both `@repo/api` and `@repo/web` depend on this package
 
 ## Communication Language
 
