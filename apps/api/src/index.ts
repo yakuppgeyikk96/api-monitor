@@ -4,8 +4,9 @@ import cookiePlugin from "./plugins/cookie.js";
 import jwtPlugin from "./plugins/jwt.js";
 import authPlugin from "./plugins/auth.js";
 import authRoutes from "./modules/auth/auth.routes.js";
+import workspaceRoutes from "./modules/workspaces/workspace.routes.js";
 import type { FastifyError } from "fastify";
-import { AuthError } from "./common/errors.js";
+import { AuthError, AppError } from "./common/errors.js";
 import { ErrorCode } from "@repo/shared-types/errors";
 
 const server = fastify();
@@ -16,12 +17,24 @@ server.register(jwtPlugin);
 server.register(authPlugin);
 
 server.register(authRoutes, { prefix: "/auth" });
+server.register(workspaceRoutes, { prefix: "/workspaces" });
 
 server.get("/ping", async () => {
   return { pong: true };
 });
 
-server.setErrorHandler(function (error: FastifyError | AuthError, request, reply) {
+server.setErrorHandler(function (error: FastifyError | AuthError | AppError, request, reply) {
+  if (error instanceof AppError) {
+    reply.code(error.statusCode).send({
+      success: false,
+      error: {
+        code: error.code,
+        message: error.message,
+      },
+    });
+    return;
+  }
+
   if (error instanceof AuthError) {
     const statusMap: Record<string, number> = {
       [ErrorCode.EMAIL_TAKEN]: 409,
