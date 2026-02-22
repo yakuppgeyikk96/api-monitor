@@ -13,7 +13,5 @@ export const ROUTE_PATHS = {
   workspaces: {
     root: 'workspaces',
     full: '/workspaces',
-    create: 'create',
-    createFull: '/workspaces/create',
   },
 } as const;

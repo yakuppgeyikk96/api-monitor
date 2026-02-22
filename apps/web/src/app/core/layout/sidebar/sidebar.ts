@@ -34,12 +34,7 @@ export class Sidebar {
 
   readonly navItems: NavItem[] = [
     { label: 'Dashboard', path: '/dashboard', icon: LayoutDashboardIcon },
-    {
-      label: 'Workspaces',
-      path: '/workspaces',
-      icon: Building2Icon,
-      children: [{ label: 'Create Workspace', path: '/workspaces/create' }],
-    },
+    { label: 'Workspaces', path: '/workspaces', icon: Building2Icon },
   ];
 
   toggleExpand(path: string): void {
