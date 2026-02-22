@@ -6,6 +6,12 @@
     </div>
 
     <form [formGroup]="form" (ngSubmit)="onSubmit()" class="flex flex-col gap-5">
+      @if (serverError()) {
+        <div class="rounded-lg bg-red-50 p-3 text-sm text-red-700">
+          {{ serverError() }}
+        </div>
+      }
+
       <app-input
         label="Full Name"
         type="text"
@@ -30,7 +36,7 @@
         formControlName="password"
       />
 
-      <app-button label="Sign Up" type="submit" variant="primary" [disabled]="false" [loading]="false" />
+      <app-button label="Sign Up" type="submit" variant="primary" [disabled]="loading()" [loading]="loading()" />
     </form>
 
     <p class="mt-6 text-center text-sm text-gray-600">
