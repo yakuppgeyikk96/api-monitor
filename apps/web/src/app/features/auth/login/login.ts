@@ -11,22 +11,21 @@ import { Button } from '../../../shared/components/button/button';
 import { Input } from '../../../shared/components/input/input';
 
 @Component({
-  selector: 'app-register',
+  selector: 'app-login',
   imports: [ReactiveFormsModule, RouterLink, Button, Input],
-  templateUrl: './register.html',
-  styleUrl: './register.scss',
+  templateUrl: './login.html',
+  styleUrl: './login.scss',
 })
-export class Register {
+export class Login {
   private fb = inject(FormBuilder);
   private authApi = inject(AuthApi);
   private router = inject(Router);
 
-  protected readonly loginPath = ROUTE_PATHS.auth.loginFull;
+  protected readonly registerPath = ROUTE_PATHS.auth.registerFull;
   protected loading = signal(false);
   protected serverError = signal('');
 
   form = this.fb.nonNullable.group({
-    fullName: ['', [Validators.required]],
     email: ['', [Validators.required, Validators.email]],
     password: ['', [Validators.required, Validators.minLength(VALIDATION_RULES.password.minLength)]],
   });
@@ -40,7 +39,7 @@ export class Register {
     this.loading.set(true);
     this.serverError.set('');
 
-    this.authApi.register(this.form.getRawValue()).subscribe({
+    this.authApi.login(this.form.getRawValue()).subscribe({
       next: () => {
         this.router.navigateByUrl(ROUTE_PATHS.dashboard.full);
       },
@@ -52,7 +51,7 @@ export class Register {
     });
   }
 
-  protected getError(field: 'fullName' | 'email' | 'password'): string {
+  protected getError(field: 'email' | 'password'): string {
     const control = this.form.controls[field];
     if (!control.touched || !control.errors) return '';
 

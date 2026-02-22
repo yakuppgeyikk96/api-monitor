@@ -1,0 +1,39 @@
+<div class="login-container">
+  <div class="w-full max-w-md rounded-2xl bg-white p-8 shadow-lg">
+    <div class="mb-8 text-center">
+      <h1 class="text-2xl font-bold text-gray-900">API Monitor</h1>
+      <p class="mt-2 text-sm text-gray-600">Sign in to your account</p>
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" class="flex flex-col gap-5">
+      @if (serverError()) {
+        <div class="rounded-lg bg-red-50 p-3 text-sm text-red-700">
+          {{ serverError() }}
+        </div>
+      }
+
+      <app-input
+        label="Email"
+        type="email"
+        placeholder="you@example.com"
+        [error]="getError('email')"
+        formControlName="email"
+      />
+
+      <app-input
+        label="Password"
+        type="password"
+        placeholder="Enter your password"
+        [error]="getError('password')"
+        formControlName="password"
+      />
+
+      <app-button label="Sign In" type="submit" variant="primary" [disabled]="loading()" [loading]="loading()" />
+    </form>
+
+    <p class="mt-6 text-center text-sm text-gray-600">
+      Don't have an account?
+      <a [routerLink]="registerPath" class="font-semibold text-indigo-600 hover:text-indigo-500">Sign Up</a>
+    </p>
+  </div>
+</div>

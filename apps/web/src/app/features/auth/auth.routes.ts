@@ -10,6 +10,6 @@ export const AUTH_ROUTES: Routes = [
   },
   {
     path: ROUTE_PATHS.auth.login,
-    loadComponent: () => import('./register/register').then((m) => m.Register), // placeholder — login not yet implemented
+    loadComponent: () => import('./login/login').then((m) => m.Login),
   },
 ];

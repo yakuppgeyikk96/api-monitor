@@ -6,4 +6,8 @@ export const ROUTE_PATHS = {
     loginFull: '/auth/login',
     registerFull: '/auth/register',
   },
+  dashboard: {
+    root: 'dashboard',
+    full: '/dashboard',
+  },
 } as const;
