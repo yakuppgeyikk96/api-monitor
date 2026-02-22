@@ -1,4 +1,4 @@
-import { Component, inject, Type } from '@angular/core';
+import { Component, inject, signal, Type } from '@angular/core';
 import { NgComponentOutlet } from '@angular/common';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 
@@ -7,11 +7,13 @@ import { LayoutDashboardIcon } from '../../../shared/icons/layout-dashboard-icon
 import { Building2Icon } from '../../../shared/icons/building-2-icon';
 import { PanelLeftCloseIcon } from '../../../shared/icons/panel-left-close-icon';
 import { PanelLeftOpenIcon } from '../../../shared/icons/panel-left-open-icon';
+import { ChevronDownIcon } from '../../../shared/icons/chevron-down-icon';
 
 interface NavItem {
   label: string;
   path: string;
   icon: Type<unknown>;
+  children?: { label: string; path: string }[];
 }
 
 @Component({
@@ -23,13 +25,36 @@ interface NavItem {
     NgComponentOutlet,
     PanelLeftCloseIcon,
     PanelLeftOpenIcon,
+    ChevronDownIcon,
   ],
 })
 export class Sidebar {
   readonly sidebarService = inject(SidebarService);
+  readonly expandedItems = signal(new Set<string>());
 
   readonly navItems: NavItem[] = [
     { label: 'Dashboard', path: '/dashboard', icon: LayoutDashboardIcon },
-    { label: 'Workspaces', path: '/workspaces', icon: Building2Icon },
+    {
+      label: 'Workspaces',
+      path: '/workspaces',
+      icon: Building2Icon,
+      children: [{ label: 'Create Workspace', path: '/workspaces/create' }],
+    },
   ];
+
+  toggleExpand(path: string): void {
+    this.expandedItems.update((set) => {
+      const next = new Set(set);
+      if (next.has(path)) {
+        next.delete(path);
+      } else {
+        next.add(path);
+      }
+      return next;
+    });
+  }
+
+  isExpanded(path: string): boolean {
+    return this.expandedItems().has(path);
+  }
 }

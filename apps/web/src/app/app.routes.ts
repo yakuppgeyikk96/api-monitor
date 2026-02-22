@@ -17,7 +17,8 @@ export const routes: Routes = [
       },
       {
         path: ROUTE_PATHS.workspaces.root,
-        loadComponent: () => import('./features/workspaces/workspaces').then((m) => m.Workspaces),
+        loadChildren: () =>
+          import('./features/workspaces/workspaces.routes').then((m) => m.WORKSPACES_ROUTES),
       },
       { path: '', redirectTo: ROUTE_PATHS.dashboard.root, pathMatch: 'full' },
     ],
