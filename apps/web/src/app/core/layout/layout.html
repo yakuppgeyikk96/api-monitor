@@ -1,0 +1,9 @@
+<app-sidebar />
+<app-navbar />
+
+<main
+  class="pt-16 min-h-screen bg-gray-50 p-6 transition-all duration-300 ease-in-out"
+  [style.margin-left]="sidebarService.width()"
+>
+  <router-outlet />
+</main>

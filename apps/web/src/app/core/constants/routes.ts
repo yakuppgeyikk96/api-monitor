@@ -10,4 +10,8 @@ export const ROUTE_PATHS = {
     root: 'dashboard',
     full: '/dashboard',
   },
+  workspaces: {
+    root: 'workspaces',
+    full: '/workspaces',
+  },
 } as const;
