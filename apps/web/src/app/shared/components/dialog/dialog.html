@@ -1,0 +1,20 @@
+@if (open()) {
+  <div
+    class="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+    (click)="onBackdropClick()"
+  >
+    <div
+      class="relative w-full max-w-md rounded-2xl bg-white p-6 shadow-xl"
+      (click)="onPanelClick($event)"
+    >
+      <button
+        type="button"
+        class="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
+        (click)="onClose()"
+      >
+        <app-x-icon [size]="20" />
+      </button>
+      <ng-content />
+    </div>
+  </div>
+}
