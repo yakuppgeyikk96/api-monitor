@@ -7,7 +7,7 @@ import { Component, input } from '@angular/core';
 export class Button {
   label = input.required<string>();
   type = input<'button' | 'submit'>('button');
-  variant = input<'primary' | 'secondary'>('primary');
+  variant = input<'primary' | 'secondary' | 'danger'>('primary');
   disabled = input(false);
   loading = input(false);
 }

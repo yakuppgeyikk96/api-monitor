@@ -5,6 +5,7 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
 import { SidebarService } from '../../services/sidebar';
 import { LayoutDashboardIcon } from '../../../shared/icons/layout-dashboard-icon';
 import { Building2Icon } from '../../../shared/icons/building-2-icon';
+import { ServerIcon } from '../../../shared/icons/server-icon';
 import { PanelLeftCloseIcon } from '../../../shared/icons/panel-left-close-icon';
 import { PanelLeftOpenIcon } from '../../../shared/icons/panel-left-open-icon';
 import { ChevronDownIcon } from '../../../shared/icons/chevron-down-icon';
@@ -35,6 +36,7 @@ export class Sidebar {
   readonly navItems: NavItem[] = [
     { label: 'Dashboard', path: '/dashboard', icon: LayoutDashboardIcon },
     { label: 'Workspaces', path: '/workspaces', icon: Building2Icon },
+    { label: 'Services', path: '/services', icon: ServerIcon },
   ];
 
   toggleExpand(path: string): void {

@@ -15,3 +15,8 @@ export interface CreateWorkspaceInput {
   name: string;
   slug?: string;
 }
+
+export interface UpdateWorkspaceInput {
+  name?: string;
+  slug?: string;
+}

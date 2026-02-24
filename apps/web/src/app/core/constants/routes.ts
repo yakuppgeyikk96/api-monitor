@@ -14,4 +14,8 @@ export const ROUTE_PATHS = {
     root: 'workspaces',
     full: '/workspaces',
   },
+  services: {
+    root: 'services',
+    full: '/services',
+  },
 } as const;

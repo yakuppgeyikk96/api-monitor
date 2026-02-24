@@ -1,0 +1,234 @@
+<div class="flex items-center justify-between">
+  <div>
+    <h1 class="text-2xl font-bold text-gray-900">Services</h1>
+    <p class="mt-2 text-gray-600">Manage services within a workspace</p>
+  </div>
+  <button
+    type="button"
+    class="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-500 disabled:opacity-50"
+    [disabled]="selectedWorkspaceId() === null"
+    (click)="showCreateDialog.set(true)"
+  >
+    Add Service
+  </button>
+</div>
+
+<div class="mt-4">
+  @if (workspacesLoading()) {
+    <div class="h-9 w-56 animate-pulse rounded-lg bg-gray-200"></div>
+  } @else if (workspaces().length === 0) {
+    <p class="text-sm text-gray-500">No workspaces found. Create a workspace first.</p>
+  } @else {
+    <select
+      class="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+      [value]="selectedWorkspaceId()"
+      (change)="onWorkspaceChange(+$any($event.target).value)"
+    >
+      @for (ws of workspaces(); track ws.id) {
+        <option [value]="ws.id">{{ ws.name }}</option>
+      }
+    </select>
+  }
+</div>
+
+<div class="mt-6">
+  <app-data-table
+    [columns]="columns"
+    [data]="services()"
+    [loading]="listLoading()"
+    trackBy="id"
+  >
+    <ng-template tableCellDef="baseUrl" let-row>
+      <span class="font-mono text-sm text-gray-500 break-all">{{ row.baseUrl }}</span>
+    </ng-template>
+
+    <ng-template tableCellDef="defaultTimeoutSeconds" let-row>
+      {{ row.defaultTimeoutSeconds }}s
+    </ng-template>
+
+    <ng-template tableCellDef="createdAt" let-row>
+      {{ row.createdAt | date: 'mediumDate' }}
+    </ng-template>
+
+    <ng-template tableCellDef="actions" let-row>
+      <div class="flex items-center gap-1">
+        <button
+          type="button"
+          class="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors"
+          (click)="onEdit(row)"
+        >
+          <app-pencil-icon [size]="16" />
+        </button>
+        <button
+          type="button"
+          class="rounded-lg p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-600 transition-colors"
+          (click)="onDelete(row)"
+        >
+          <app-trash-icon [size]="16" />
+        </button>
+      </div>
+    </ng-template>
+
+    <ng-template tableEmpty>
+      <div class="flex flex-col items-center py-6">
+        @if (selectedWorkspaceId() !== null) {
+          <div class="flex h-12 w-12 items-center justify-center rounded-full bg-indigo-50">
+            <app-server-icon [size]="24" class="text-indigo-600" />
+          </div>
+          <h3 class="mt-4 text-sm font-semibold text-gray-900">No services yet</h3>
+          <p class="mt-1 text-sm text-gray-500">Get started by registering your first API service.</p>
+          <button
+            type="button"
+            class="mt-4 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-500"
+            (click)="showCreateDialog.set(true)"
+          >
+            Add Service
+          </button>
+        } @else {
+          <div class="flex h-12 w-12 items-center justify-center rounded-full bg-gray-100">
+            <app-server-icon [size]="24" class="text-gray-400" />
+          </div>
+          <h3 class="mt-4 text-sm font-semibold text-gray-900">No workspace selected</h3>
+          <p class="mt-1 text-sm text-gray-500">Select a workspace above to view its services.</p>
+        }
+      </div>
+    </ng-template>
+  </app-data-table>
+</div>
+
+<!-- Create dialog -->
+<app-dialog [open]="showCreateDialog()" (closed)="onCreateDialogClosed()">
+  <h2 class="text-lg font-semibold text-gray-900">Add Service</h2>
+  <p class="mt-1 text-sm text-gray-600">Register a new service in this workspace.</p>
+
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="mt-5 flex flex-col gap-4">
+    @if (serverError()) {
+      <div class="rounded-lg bg-red-50 p-3 text-sm text-red-700">
+        {{ serverError() }}
+      </div>
+    }
+
+    <app-input
+      label="Name"
+      type="text"
+      placeholder="Payment API"
+      [error]="getError('name')"
+      formControlName="name"
+    />
+
+    <app-input
+      label="Base URL"
+      type="text"
+      placeholder="https://api.example.com"
+      [error]="getError('baseUrl')"
+      formControlName="baseUrl"
+    />
+
+    <app-input
+      label="Default Timeout (seconds)"
+      type="text"
+      placeholder="30"
+      [error]="getError('defaultTimeoutSeconds')"
+      formControlName="defaultTimeoutSeconds"
+    />
+
+    <div class="mt-2 flex justify-end gap-3">
+      <button
+        type="button"
+        class="rounded-lg border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50"
+        (click)="onCreateDialogClosed()"
+      >
+        Cancel
+      </button>
+      <app-button
+        label="Add Service"
+        type="submit"
+        variant="primary"
+        [disabled]="formLoading()"
+        [loading]="formLoading()"
+      />
+    </div>
+  </form>
+</app-dialog>
+
+<!-- Edit dialog -->
+<app-dialog [open]="showEditDialog()" (closed)="onEditDialogClosed()">
+  <h2 class="text-lg font-semibold text-gray-900">Edit Service</h2>
+  <p class="mt-1 text-sm text-gray-600">Update your service details.</p>
+
+  <form [formGroup]="form" (ngSubmit)="onEditSubmit()" class="mt-5 flex flex-col gap-4">
+    @if (serverError()) {
+      <div class="rounded-lg bg-red-50 p-3 text-sm text-red-700">
+        {{ serverError() }}
+      </div>
+    }
+
+    <app-input
+      label="Name"
+      type="text"
+      placeholder="Payment API"
+      [error]="getError('name')"
+      formControlName="name"
+    />
+
+    <app-input
+      label="Base URL"
+      type="text"
+      placeholder="https://api.example.com"
+      [error]="getError('baseUrl')"
+      formControlName="baseUrl"
+    />
+
+    <app-input
+      label="Default Timeout (seconds)"
+      type="text"
+      placeholder="30"
+      [error]="getError('defaultTimeoutSeconds')"
+      formControlName="defaultTimeoutSeconds"
+    />
+
+    <div class="mt-2 flex justify-end gap-3">
+      <button
+        type="button"
+        class="rounded-lg border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50"
+        (click)="onEditDialogClosed()"
+      >
+        Cancel
+      </button>
+      <app-button
+        label="Save"
+        type="submit"
+        variant="primary"
+        [disabled]="formLoading()"
+        [loading]="formLoading()"
+      />
+    </div>
+  </form>
+</app-dialog>
+
+<!-- Delete confirmation dialog -->
+<app-dialog [open]="showDeleteDialog()" (closed)="onDeleteDialogClosed()">
+  <h2 class="text-lg font-semibold text-gray-900">Delete Service</h2>
+  <p class="mt-2 text-sm text-gray-600">
+    Are you sure you want to delete
+    <span class="font-semibold text-gray-900">{{ selectedService()?.name }}</span>?
+    This action cannot be undone.
+  </p>
+
+  <div class="mt-6 flex justify-end gap-3">
+    <button
+      type="button"
+      class="rounded-lg border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50"
+      (click)="onDeleteDialogClosed()"
+    >
+      Cancel
+    </button>
+    <app-button
+      label="Delete"
+      variant="danger"
+      [disabled]="deleteLoading()"
+      [loading]="deleteLoading()"
+      (click)="onConfirmDelete()"
+    />
+  </div>
+</app-dialog>

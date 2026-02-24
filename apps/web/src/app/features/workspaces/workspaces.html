@@ -25,6 +25,24 @@
     <ng-template tableCellDef="createdAt" let-row>
       {{ row.createdAt | date: 'mediumDate' }}
     </ng-template>
+    <ng-template tableCellDef="actions" let-row>
+      <div class="flex items-center gap-1">
+        <button
+          type="button"
+          class="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors"
+          (click)="onEdit(row)"
+        >
+          <app-pencil-icon [size]="16" />
+        </button>
+        <button
+          type="button"
+          class="rounded-lg p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-600 transition-colors"
+          (click)="onDelete(row)"
+        >
+          <app-trash-icon [size]="16" />
+        </button>
+      </div>
+    </ng-template>
 
     <ng-template tableEmpty>
       <p class="text-sm text-gray-500">No workspaces yet</p>
@@ -39,7 +57,8 @@
   </app-data-table>
 </div>
 
-<app-dialog [open]="showCreateDialog()" (closed)="onDialogClosed()">
+<!-- Create dialog -->
+<app-dialog [open]="showCreateDialog()" (closed)="onCreateDialogClosed()">
   <h2 class="text-lg font-semibold text-gray-900">Create Workspace</h2>
   <p class="mt-1 text-sm text-gray-600">Enter a name for your new workspace.</p>
 
@@ -70,11 +89,79 @@
       <button
         type="button"
         class="rounded-lg border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50"
-        (click)="onDialogClosed()"
+        (click)="onCreateDialogClosed()"
       >
         Cancel
       </button>
       <app-button label="Create" type="submit" variant="primary" [disabled]="loading()" [loading]="loading()" />
     </div>
   </form>
+</app-dialog>
+
+<!-- Edit dialog -->
+<app-dialog [open]="showEditDialog()" (closed)="onEditDialogClosed()">
+  <h2 class="text-lg font-semibold text-gray-900">Edit Workspace</h2>
+  <p class="mt-1 text-sm text-gray-600">Update your workspace details.</p>
+
+  <form [formGroup]="form" (ngSubmit)="onEditSubmit()" class="mt-5 flex flex-col gap-4">
+    @if (serverError()) {
+      <div class="rounded-lg bg-red-50 p-3 text-sm text-red-700">
+        {{ serverError() }}
+      </div>
+    }
+
+    <app-input
+      label="Name"
+      type="text"
+      placeholder="My Workspace"
+      [error]="getError('name')"
+      formControlName="name"
+    />
+
+    <app-input
+      label="Slug"
+      type="text"
+      placeholder="my-workspace"
+      [error]="getError('slug')"
+      formControlName="slug"
+    />
+
+    <div class="mt-2 flex justify-end gap-3">
+      <button
+        type="button"
+        class="rounded-lg border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50"
+        (click)="onEditDialogClosed()"
+      >
+        Cancel
+      </button>
+      <app-button label="Save" type="submit" variant="primary" [disabled]="loading()" [loading]="loading()" />
+    </div>
+  </form>
+</app-dialog>
+
+<!-- Delete confirmation dialog -->
+<app-dialog [open]="showDeleteDialog()" (closed)="onDeleteDialogClosed()">
+  <h2 class="text-lg font-semibold text-gray-900">Delete Workspace</h2>
+  <p class="mt-2 text-sm text-gray-600">
+    Are you sure you want to delete
+    <span class="font-semibold text-gray-900">{{ selectedWorkspace()?.name }}</span>?
+    This action cannot be undone.
+  </p>
+
+  <div class="mt-6 flex justify-end gap-3">
+    <button
+      type="button"
+      class="rounded-lg border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50"
+      (click)="onDeleteDialogClosed()"
+    >
+      Cancel
+    </button>
+    <app-button
+      label="Delete"
+      variant="danger"
+      [disabled]="deleteLoading()"
+      [loading]="deleteLoading()"
+      (click)="onConfirmDelete()"
+    />
+  </div>
 </app-dialog>
