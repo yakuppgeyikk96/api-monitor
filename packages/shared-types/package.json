@@ -6,7 +6,8 @@
     ".": "./src/index.ts",
     "./auth": "./src/auth.ts",
     "./errors": "./src/errors.ts",
-    "./responses": "./src/responses.ts"
+    "./responses": "./src/responses.ts",
+    "./service": "./src/service.ts"
   },
   "scripts": {
     "check-types": "tsc --noEmit"

@@ -13,6 +13,9 @@ export const ErrorCode = {
   SLUG_TAKEN: "SLUG_TAKEN",
   FORBIDDEN: "FORBIDDEN",
 
+  // Service
+  SERVICE_NOT_FOUND: "SERVICE_NOT_FOUND",
+
   // Validation
   VALIDATION_ERROR: "VALIDATION_ERROR",
 } as const;
@@ -28,5 +31,6 @@ export const ErrorMessage: Record<ErrorCode, string> = {
   [ErrorCode.WORKSPACE_NOT_FOUND]: "Workspace not found",
   [ErrorCode.SLUG_TAKEN]: "Workspace slug is already in use",
   [ErrorCode.FORBIDDEN]: "You do not have permission to perform this action",
+  [ErrorCode.SERVICE_NOT_FOUND]: "Service not found",
   [ErrorCode.VALIDATION_ERROR]: "Validation failed",
 };
