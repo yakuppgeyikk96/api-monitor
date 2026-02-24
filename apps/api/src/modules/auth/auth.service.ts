@@ -46,7 +46,7 @@ export function createAuthService(
     },
 
     async login(input: LoginInput): Promise<AuthResult> {
-      const user = await userRepository.findByEmail(input.email);
+      const user = await userRepository.findByEmailWithPassword(input.email);
       if (!user) {
         throw new AuthError(ErrorCode.INVALID_CREDENTIALS, ErrorMessage.INVALID_CREDENTIALS);
       }

@@ -1,10 +1,13 @@
-import { eq, and, isNull } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import {
   workspaces,
   type Workspace,
   type NewWorkspace,
 } from "../../db/schema/workspace.js";
+import { services } from "../../db/schema/service.js";
+import { endpoints } from "../../db/schema/endpoint.js";
+import { withActive } from "../../db/helpers.js";
 
 export function createWorkspaceRepository(db: PostgresJsDatabase) {
   return {
@@ -20,7 +23,7 @@ export function createWorkspaceRepository(db: PostgresJsDatabase) {
       const [workspace] = await db
         .select()
         .from(workspaces)
-        .where(and(eq(workspaces.id, id), isNull(workspaces.deletedAt)));
+        .where(withActive(workspaces, eq(workspaces.id, id)));
       return workspace ?? null;
     },
 
@@ -28,7 +31,7 @@ export function createWorkspaceRepository(db: PostgresJsDatabase) {
       const [workspace] = await db
         .select()
         .from(workspaces)
-        .where(and(eq(workspaces.slug, slug), isNull(workspaces.deletedAt)));
+        .where(withActive(workspaces, eq(workspaces.slug, slug)));
       return workspace ?? null;
     },
 
@@ -36,9 +39,7 @@ export function createWorkspaceRepository(db: PostgresJsDatabase) {
       return db
         .select()
         .from(workspaces)
-        .where(
-          and(eq(workspaces.ownerId, ownerId), isNull(workspaces.deletedAt)),
-        );
+        .where(withActive(workspaces, eq(workspaces.ownerId, ownerId)));
     },
 
     async update(
@@ -47,17 +48,28 @@ export function createWorkspaceRepository(db: PostgresJsDatabase) {
     ): Promise<Workspace | null> {
       const [workspace] = await db
         .update(workspaces)
-        .set({ ...data, updatedAt: new Date() })
-        .where(and(eq(workspaces.id, id), isNull(workspaces.deletedAt)))
+        .set(data)
+        .where(withActive(workspaces, eq(workspaces.id, id)))
         .returning();
       return workspace ?? null;
     },
 
-    async softDelete(id: number): Promise<void> {
-      await db
-        .update(workspaces)
-        .set({ deletedAt: new Date() })
-        .where(eq(workspaces.id, id));
+    async softDeleteCascade(id: number): Promise<void> {
+      const now = new Date();
+      await db.transaction(async (tx) => {
+        await tx
+          .update(endpoints)
+          .set({ deletedAt: now })
+          .where(withActive(endpoints, eq(endpoints.workspaceId, id)));
+        await tx
+          .update(services)
+          .set({ deletedAt: now })
+          .where(withActive(services, eq(services.workspaceId, id)));
+        await tx
+          .update(workspaces)
+          .set({ deletedAt: now })
+          .where(withActive(workspaces, eq(workspaces.id, id)));
+      });
     },
   };
 }

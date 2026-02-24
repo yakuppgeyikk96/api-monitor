@@ -3,15 +3,16 @@ import {
   pgTable,
   varchar,
   timestamp,
-  index,
+  uniqueIndex,
 } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
 import { timestamps } from "./_columns";
 
 export const users = pgTable(
   "users",
   {
     id: integer().primaryKey().generatedAlwaysAsIdentity(),
-    email: varchar("email", { length: 255 }).notNull().unique(),
+    email: varchar("email", { length: 255 }).notNull(),
     passwordHash: varchar("password_hash", { length: 255 }).notNull(),
     fullName: varchar("full_name", { length: 100 }).notNull(),
     avatarUrl: varchar("avatar_url", { length: 2048 }),
@@ -19,7 +20,9 @@ export const users = pgTable(
     ...timestamps,
   },
   (table) => [
-    index("users_deleted_at_idx").on(table.deletedAt),
+    uniqueIndex("users_email_active_idx")
+      .on(table.email)
+      .where(sql`${table.deletedAt} IS NULL`),
   ]
 );
 

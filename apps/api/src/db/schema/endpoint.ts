@@ -7,6 +7,7 @@ import {
   timestamp,
   index,
 } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
 import { timestamps } from "./_columns";
 import { workspaces } from "./workspace";
 import { services } from "./service";
@@ -36,10 +37,15 @@ export const endpoints = pgTable(
     ...timestamps,
   },
   (table) => [
-    index("endpoints_workspace_id_idx").on(table.workspaceId),
-    index("endpoints_service_id_idx").on(table.serviceId),
-    index("endpoints_deleted_at_idx").on(table.deletedAt),
-    index("endpoints_active_check_idx").on(table.isActive, table.deletedAt),
+    index("endpoints_workspace_id_active_idx")
+      .on(table.workspaceId)
+      .where(sql`${table.deletedAt} IS NULL`),
+    index("endpoints_service_id_active_idx")
+      .on(table.serviceId)
+      .where(sql`${table.deletedAt} IS NULL`),
+    index("endpoints_active_check_idx")
+      .on(table.isActive, table.checkIntervalSeconds)
+      .where(sql`${table.deletedAt} IS NULL`),
   ]
 );
 

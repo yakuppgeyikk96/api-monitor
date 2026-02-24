@@ -90,6 +90,16 @@ apps/web/src/app/
 └── environments/   → Environment configs
 ```
 
+## API Layer Responsibilities
+
+Each API module (`apps/api/src/modules/`) follows a strict three-layer architecture:
+
+- **Repository** (`*.repository.ts`) — All database operations live here: queries, inserts, updates, soft deletes, transactions, and cascade logic. This is the only layer that may import from `drizzle-orm` or `db/schema/`.
+- **Service** (`*.service.ts`) — Business rules only: authorization (ownership checks), validation (existence checks, uniqueness), input transformation, and orchestration of repository calls. **Must never import Drizzle operators, schema tables, or database types.** If you need a transaction, add a repository method for it.
+- **Routes** (`*.routes.ts`) — HTTP layer only: request/response mapping, status codes, schema validation config. Instantiates repositories and services, wires them together.
+
+**Key rule:** If you find yourself importing from `drizzle-orm` or `db/schema/` in a service file, you are putting database logic in the wrong layer. Move it to the repository.
+
 ## Common Commands
 
 ```bash

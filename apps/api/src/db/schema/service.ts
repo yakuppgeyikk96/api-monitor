@@ -6,6 +6,7 @@ import {
   timestamp,
   index,
 } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
 import { timestamps } from "./_columns";
 import { workspaces } from "./workspace";
 
@@ -26,8 +27,9 @@ export const services = pgTable(
     ...timestamps,
   },
   (table) => [
-    index("services_workspace_id_idx").on(table.workspaceId),
-    index("services_deleted_at_idx").on(table.deletedAt),
+    index("services_workspace_id_active_idx")
+      .on(table.workspaceId)
+      .where(sql`${table.deletedAt} IS NULL`),
   ]
 );
 

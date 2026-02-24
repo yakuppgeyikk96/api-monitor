@@ -15,6 +15,13 @@
       "when": 1771700430495,
       "tag": "0001_sturdy_korath",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1771958330590,
+      "tag": "0002_powerful_drax",
+      "breakpoints": true
     }
   ]
 }

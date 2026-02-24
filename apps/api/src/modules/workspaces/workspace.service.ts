@@ -62,7 +62,7 @@ export function createWorkspaceService(repository: WorkspaceRepository) {
 
     async remove(id: number, userId: number) {
       await assertOwner(id, userId);
-      await repository.softDelete(id);
+      await repository.softDeleteCascade(id);
     },
   };
 }

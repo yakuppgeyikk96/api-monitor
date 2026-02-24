@@ -4,7 +4,9 @@ import {
   varchar,
   timestamp,
   index,
+  uniqueIndex,
 } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
 import { timestamps } from "./_columns";
 import { users } from "./user";
 
@@ -16,7 +18,7 @@ export const workspaces = pgTable(
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
     name: varchar("name", { length: 100 }).notNull(),
-    slug: varchar("slug", { length: 60 }).notNull().unique(),
+    slug: varchar("slug", { length: 60 }).notNull(),
     plan: varchar("plan", { length: 20 }).notNull().default("free"),
     maxServices: integer("max_services").notNull().default(5),
     maxCheckIntervalSeconds: integer("max_check_interval_seconds")
@@ -26,8 +28,12 @@ export const workspaces = pgTable(
     ...timestamps,
   },
   (table) => [
-    index("workspaces_owner_id_idx").on(table.ownerId),
-    index("workspaces_deleted_at_idx").on(table.deletedAt),
+    index("workspaces_owner_id_active_idx")
+      .on(table.ownerId)
+      .where(sql`${table.deletedAt} IS NULL`),
+    uniqueIndex("workspaces_slug_active_idx")
+      .on(table.slug)
+      .where(sql`${table.deletedAt} IS NULL`),
   ]
 );
 

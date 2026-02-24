@@ -1,44 +1,47 @@
-import { eq, and, isNull } from "drizzle-orm";
+import { eq, getTableColumns } from "drizzle-orm";
 import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import { users, type User, type NewUser } from "../../db/schema/user.js";
+import { withActive } from "../../db/helpers.js";
+
+const { passwordHash: _passwordHash, deletedAt: _deletedAt, ...publicColumns } =
+  getTableColumns(users);
+
+export type UserPublic = Omit<User, "passwordHash" | "deletedAt">;
 
 export function createUserRepository(db: PostgresJsDatabase) {
   return {
-    async create(data: NewUser): Promise<User> {
-      const [user] = await db.insert(users).values(data).returning();
+    async create(data: NewUser): Promise<UserPublic> {
+      const [user] = await db.insert(users).values(data).returning(publicColumns);
       return user;
     },
 
-    async findById(id: number): Promise<User | null> {
+    async findById(id: number): Promise<UserPublic | null> {
+      const [user] = await db
+        .select(publicColumns)
+        .from(users)
+        .where(withActive(users, eq(users.id, id)));
+
+      return user ?? null;
+    },
+
+    async findByEmail(email: string): Promise<UserPublic | null> {
+      const [user] = await db
+        .select(publicColumns)
+        .from(users)
+        .where(withActive(users, eq(users.email, email)));
+
+      return user ?? null;
+    },
+
+    async findByEmailWithPassword(email: string): Promise<User | null> {
       const [user] = await db
         .select()
         .from(users)
-        .where(and(eq(users.id, id), isNull(users.deletedAt)));
+        .where(withActive(users, eq(users.email, email)));
 
       return user ?? null;
     },
 
-    async findByEmail(email: string): Promise<User | null> {
-      const [user] = await db
-        .select()
-        .from(users)
-        .where(and(eq(users.email, email), isNull(users.deletedAt)));
-
-      return user ?? null;
-    },
-
-    async updatePassword(
-      id: number,
-      passwordHash: string,
-    ): Promise<User | null> {
-      const [user] = await db
-        .update(users)
-        .set({ passwordHash, updatedAt: new Date() })
-        .where(and(eq(users.id, id), isNull(users.deletedAt)))
-        .returning();
-
-      return user ?? null;
-    },
   };
 }
 
