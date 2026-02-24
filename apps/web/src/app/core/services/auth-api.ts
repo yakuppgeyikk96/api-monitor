@@ -16,4 +16,12 @@ export class AuthApi {
   login(input: LoginInput): Observable<ApiResponse<AuthUser>> {
     return this.http.post<ApiResponse<AuthUser>>(`${environment.apiUrl}/auth/login`, input);
   }
+
+  me(): Observable<ApiResponse<AuthUser>> {
+    return this.http.get<ApiResponse<AuthUser>>(`${environment.apiUrl}/auth/me`);
+  }
+
+  logout(): Observable<ApiResponse<null>> {
+    return this.http.post<ApiResponse<null>>(`${environment.apiUrl}/auth/logout`, {});
+  }
 }

@@ -2,7 +2,31 @@
   class="fixed top-0 right-0 h-16 bg-white border-b border-gray-200 flex items-center justify-end px-6 z-10 transition-all duration-300 ease-in-out"
   [style.left]="sidebarService.width()"
 >
-  <button class="text-gray-500 hover:text-gray-700 transition-colors">
-    <app-circle-user-icon [size]="36" />
-  </button>
+  <div class="relative">
+    <button
+      (click)="toggleDropdown()"
+      class="text-gray-500 hover:text-gray-700 transition-colors"
+    >
+      <app-circle-user-icon [size]="36" />
+    </button>
+
+    @if (dropdownOpen()) {
+      <div class="fixed inset-0 z-10" (click)="closeDropdown()"></div>
+
+      <div class="absolute right-0 top-12 z-20 w-56 rounded-lg bg-white shadow-lg border border-gray-200 py-1">
+        @if (authStore.user(); as user) {
+          <div class="px-4 py-3 border-b border-gray-100">
+            <p class="text-sm font-medium text-gray-900 truncate">{{ user.fullName }}</p>
+            <p class="text-xs text-gray-500 truncate">{{ user.email }}</p>
+          </div>
+        }
+        <button
+          (click)="logout()"
+          class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+        >
+          Sign out
+        </button>
+      </div>
+    }
+  </div>
 </header>

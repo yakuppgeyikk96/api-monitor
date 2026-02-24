@@ -1,11 +1,12 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import type { ApiError } from '@repo/shared-types';
 
 import { ROUTE_PATHS } from '../../../core/constants/routes';
 import { AuthApi } from '../../../core/services/auth-api';
+import { AuthStore } from '../../../core/services/auth-store';
 import { VALIDATION_MESSAGES, VALIDATION_RULES } from '../../../shared/constants/validation';
 import { Button } from '../../../shared/components/button/button';
 import { Input } from '../../../shared/components/input/input';
@@ -19,7 +20,9 @@ import { Input } from '../../../shared/components/input/input';
 export class Register {
   private fb = inject(FormBuilder);
   private authApi = inject(AuthApi);
+  private authStore = inject(AuthStore);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
 
   protected readonly loginPath = ROUTE_PATHS.auth.loginFull;
   protected loading = signal(false);
@@ -41,8 +44,11 @@ export class Register {
     this.serverError.set('');
 
     this.authApi.register(this.form.getRawValue()).subscribe({
-      next: () => {
-        this.router.navigateByUrl(ROUTE_PATHS.dashboard.full);
+      next: (res) => {
+        this.authStore.setUser(res.data);
+        const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
+        const target = returnUrl?.startsWith('/') ? returnUrl : ROUTE_PATHS.dashboard.full;
+        this.router.navigateByUrl(target);
       },
       error: (err: HttpErrorResponse) => {
         this.loading.set(false);
