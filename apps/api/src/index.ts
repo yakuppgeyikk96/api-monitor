@@ -6,6 +6,7 @@ import authPlugin from "./plugins/auth.js";
 import authRoutes from "./modules/auth/auth.routes.js";
 import workspaceRoutes from "./modules/workspaces/workspace.routes.js";
 import serviceRoutes from "./modules/services/service.routes.js";
+import endpointRoutes from "./modules/endpoints/endpoint.routes.js";
 import type { FastifyError } from "fastify";
 import { AuthError, AppError } from "./common/errors.js";
 import { ErrorCode } from "@repo/shared-types/errors";
@@ -20,6 +21,7 @@ server.register(authPlugin);
 server.register(authRoutes, { prefix: "/auth" });
 server.register(workspaceRoutes, { prefix: "/workspaces" });
 server.register(serviceRoutes, { prefix: "/workspaces/:workspaceId/services" });
+server.register(endpointRoutes, { prefix: "/workspaces/:workspaceId/services/:serviceId/endpoints" });
 
 server.get("/ping", async () => {
   return { pong: true };

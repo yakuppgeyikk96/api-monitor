@@ -29,6 +29,11 @@ export const routes: Routes = [
         loadChildren: () =>
           import('./features/services/services.routes').then((m) => m.SERVICES_ROUTES),
       },
+      {
+        path: ROUTE_PATHS.endpoints.root,
+        loadChildren: () =>
+          import('./features/endpoints/endpoints.routes').then((m) => m.ENDPOINTS_ROUTES),
+      },
       { path: '', redirectTo: ROUTE_PATHS.dashboard.root, pathMatch: 'full' },
     ],
   },

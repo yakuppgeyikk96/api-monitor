@@ -18,4 +18,8 @@ export const ROUTE_PATHS = {
     root: 'services',
     full: '/services',
   },
+  endpoints: {
+    root: 'endpoints',
+    full: '/endpoints',
+  },
 } as const;

@@ -1,0 +1,414 @@
+<div class="flex items-center justify-between">
+  <div>
+    <h1 class="text-2xl font-bold text-gray-900">Endpoints</h1>
+    <p class="mt-2 text-gray-600">Manage monitored endpoints within a service</p>
+  </div>
+  <button
+    type="button"
+    class="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-500 disabled:opacity-50"
+    [disabled]="selectedServiceId() === null"
+    (click)="showCreateDialog.set(true)"
+  >
+    Add Endpoint
+  </button>
+</div>
+
+<div class="mt-4 flex items-center gap-4">
+  @if (workspacesLoading()) {
+    <div class="h-9 w-56 animate-pulse rounded-lg bg-gray-200"></div>
+  } @else if (workspaces().length === 0) {
+    <p class="text-sm text-gray-500">No workspaces found. Create a workspace first.</p>
+  } @else {
+    <select
+      class="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+      [value]="selectedWorkspaceId()"
+      (change)="onWorkspaceChange(+$any($event.target).value)"
+    >
+      @for (ws of workspaces(); track ws.id) {
+        <option [value]="ws.id">{{ ws.name }}</option>
+      }
+    </select>
+
+    @if (servicesLoading()) {
+      <div class="h-9 w-56 animate-pulse rounded-lg bg-gray-200"></div>
+    } @else if (services().length === 0) {
+      <p class="text-sm text-gray-500">No services in this workspace.</p>
+    } @else {
+      <select
+        class="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        [value]="selectedServiceId()"
+        (change)="onServiceChange(+$any($event.target).value)"
+      >
+        @for (svc of services(); track svc.id) {
+          <option [value]="svc.id">{{ svc.name }}</option>
+        }
+      </select>
+    }
+  }
+</div>
+
+<div class="mt-6">
+  <app-data-table
+    [columns]="columns"
+    [data]="endpoints()"
+    [loading]="listLoading()"
+    trackBy="id"
+  >
+    <ng-template tableCellDef="route" let-row>
+      <span class="font-mono text-sm text-gray-500 break-all">{{ row.route }}</span>
+    </ng-template>
+
+    <ng-template tableCellDef="httpMethod" let-row>
+      <span class="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-600/20">
+        {{ row.httpMethod }}
+      </span>
+    </ng-template>
+
+    <ng-template tableCellDef="isActive" let-row>
+      @if (row.isActive) {
+        <span class="inline-flex items-center rounded-full bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">
+          Active
+        </span>
+      } @else {
+        <span class="inline-flex items-center rounded-full bg-gray-50 px-2 py-1 text-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10">
+          Inactive
+        </span>
+      }
+    </ng-template>
+
+    <ng-template tableCellDef="createdAt" let-row>
+      {{ row.createdAt | date: 'mediumDate' }}
+    </ng-template>
+
+    <ng-template tableCellDef="actions" let-row>
+      <div class="flex items-center gap-1">
+        <button
+          type="button"
+          class="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors"
+          (click)="onEdit(row)"
+        >
+          <app-pencil-icon [size]="16" />
+        </button>
+        <button
+          type="button"
+          class="rounded-lg p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-600 transition-colors"
+          (click)="onDelete(row)"
+        >
+          <app-trash-icon [size]="16" />
+        </button>
+      </div>
+    </ng-template>
+
+    <ng-template tableEmpty>
+      <div class="flex flex-col items-center py-6">
+        @if (selectedServiceId() !== null) {
+          <div class="flex h-12 w-12 items-center justify-center rounded-full bg-indigo-50">
+            <app-radio-tower-icon [size]="24" class="text-indigo-600" />
+          </div>
+          <h3 class="mt-4 text-sm font-semibold text-gray-900">No endpoints yet</h3>
+          <p class="mt-1 text-sm text-gray-500">Get started by adding your first endpoint to monitor.</p>
+          <button
+            type="button"
+            class="mt-4 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-500"
+            (click)="showCreateDialog.set(true)"
+          >
+            Add Endpoint
+          </button>
+        } @else if (selectedWorkspaceId() !== null) {
+          <div class="flex h-12 w-12 items-center justify-center rounded-full bg-gray-100">
+            <app-radio-tower-icon [size]="24" class="text-gray-400" />
+          </div>
+          <h3 class="mt-4 text-sm font-semibold text-gray-900">No service selected</h3>
+          <p class="mt-1 text-sm text-gray-500">Select a service above to view its endpoints.</p>
+        } @else {
+          <div class="flex h-12 w-12 items-center justify-center rounded-full bg-gray-100">
+            <app-radio-tower-icon [size]="24" class="text-gray-400" />
+          </div>
+          <h3 class="mt-4 text-sm font-semibold text-gray-900">No workspace selected</h3>
+          <p class="mt-1 text-sm text-gray-500">Select a workspace above to view services and endpoints.</p>
+        }
+      </div>
+    </ng-template>
+  </app-data-table>
+</div>
+
+<!-- Create dialog -->
+<app-dialog [open]="showCreateDialog()" (closed)="onCreateDialogClosed()">
+  <h2 class="text-lg font-semibold text-gray-900">Add Endpoint</h2>
+  <p class="mt-1 text-sm text-gray-600">Register a new endpoint to monitor.</p>
+
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="mt-5 flex flex-col gap-4">
+    @if (serverError()) {
+      <div class="rounded-lg bg-red-50 p-3 text-sm text-red-700">
+        {{ serverError() }}
+      </div>
+    }
+
+    <app-input
+      label="Name"
+      type="text"
+      placeholder="Health Check"
+      [error]="getError('name')"
+      formControlName="name"
+    />
+
+    <app-input
+      label="Route"
+      type="text"
+      placeholder="/api/health"
+      [error]="getError('route')"
+      formControlName="route"
+    />
+
+    <div>
+      <label class="block text-sm font-medium text-gray-700">HTTP Method</label>
+      <select
+        class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        formControlName="httpMethod"
+      >
+        @for (method of httpMethods; track method) {
+          <option [value]="method">{{ method }}</option>
+        }
+      </select>
+    </div>
+
+    <div class="grid grid-cols-2 gap-4">
+      <div>
+        <label class="block text-sm font-medium text-gray-700">Expected Status Code</label>
+        <input
+          type="number"
+          class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          placeholder="200"
+          formControlName="expectedStatusCode"
+        />
+        @if (getError('expectedStatusCode')) {
+          <p class="mt-1 text-sm text-red-600">{{ getError('expectedStatusCode') }}</p>
+        }
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700">Check Interval (seconds)</label>
+        <input
+          type="number"
+          class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          placeholder="300"
+          formControlName="checkIntervalSeconds"
+        />
+        @if (getError('checkIntervalSeconds')) {
+          <p class="mt-1 text-sm text-red-600">{{ getError('checkIntervalSeconds') }}</p>
+        }
+      </div>
+    </div>
+
+    <div class="flex items-center gap-2">
+      <input
+        type="checkbox"
+        id="create-isActive"
+        class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+        formControlName="isActive"
+      />
+      <label for="create-isActive" class="text-sm font-medium text-gray-700">Active</label>
+    </div>
+
+    <div>
+      <label class="block text-sm font-medium text-gray-700">Headers (JSON)</label>
+      <textarea
+        class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        rows="3"
+        placeholder='{"Authorization": "Bearer ..."}'
+        formControlName="headers"
+      ></textarea>
+    </div>
+
+    <div>
+      <label class="block text-sm font-medium text-gray-700">Body (JSON)</label>
+      <textarea
+        class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        rows="3"
+        placeholder='{"key": "value"}'
+        formControlName="body"
+      ></textarea>
+    </div>
+
+    <div>
+      <label class="block text-sm font-medium text-gray-700">Expected Body (JSON)</label>
+      <textarea
+        class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        rows="3"
+        placeholder='{"status": "ok"}'
+        formControlName="expectedBody"
+      ></textarea>
+    </div>
+
+    <div class="mt-2 flex justify-end gap-3">
+      <button
+        type="button"
+        class="rounded-lg border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50"
+        (click)="onCreateDialogClosed()"
+      >
+        Cancel
+      </button>
+      <app-button
+        label="Add Endpoint"
+        type="submit"
+        variant="primary"
+        [disabled]="formLoading()"
+        [loading]="formLoading()"
+      />
+    </div>
+  </form>
+</app-dialog>
+
+<!-- Edit dialog -->
+<app-dialog [open]="showEditDialog()" (closed)="onEditDialogClosed()">
+  <h2 class="text-lg font-semibold text-gray-900">Edit Endpoint</h2>
+  <p class="mt-1 text-sm text-gray-600">Update your endpoint configuration.</p>
+
+  <form [formGroup]="form" (ngSubmit)="onEditSubmit()" class="mt-5 flex flex-col gap-4">
+    @if (serverError()) {
+      <div class="rounded-lg bg-red-50 p-3 text-sm text-red-700">
+        {{ serverError() }}
+      </div>
+    }
+
+    <app-input
+      label="Name"
+      type="text"
+      placeholder="Health Check"
+      [error]="getError('name')"
+      formControlName="name"
+    />
+
+    <app-input
+      label="Route"
+      type="text"
+      placeholder="/api/health"
+      [error]="getError('route')"
+      formControlName="route"
+    />
+
+    <div>
+      <label class="block text-sm font-medium text-gray-700">HTTP Method</label>
+      <select
+        class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        formControlName="httpMethod"
+      >
+        @for (method of httpMethods; track method) {
+          <option [value]="method">{{ method }}</option>
+        }
+      </select>
+    </div>
+
+    <div class="grid grid-cols-2 gap-4">
+      <div>
+        <label class="block text-sm font-medium text-gray-700">Expected Status Code</label>
+        <input
+          type="number"
+          class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          placeholder="200"
+          formControlName="expectedStatusCode"
+        />
+        @if (getError('expectedStatusCode')) {
+          <p class="mt-1 text-sm text-red-600">{{ getError('expectedStatusCode') }}</p>
+        }
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700">Check Interval (seconds)</label>
+        <input
+          type="number"
+          class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          placeholder="300"
+          formControlName="checkIntervalSeconds"
+        />
+        @if (getError('checkIntervalSeconds')) {
+          <p class="mt-1 text-sm text-red-600">{{ getError('checkIntervalSeconds') }}</p>
+        }
+      </div>
+    </div>
+
+    <div class="flex items-center gap-2">
+      <input
+        type="checkbox"
+        id="edit-isActive"
+        class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+        formControlName="isActive"
+      />
+      <label for="edit-isActive" class="text-sm font-medium text-gray-700">Active</label>
+    </div>
+
+    <div>
+      <label class="block text-sm font-medium text-gray-700">Headers (JSON)</label>
+      <textarea
+        class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        rows="3"
+        placeholder='{"Authorization": "Bearer ..."}'
+        formControlName="headers"
+      ></textarea>
+    </div>
+
+    <div>
+      <label class="block text-sm font-medium text-gray-700">Body (JSON)</label>
+      <textarea
+        class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        rows="3"
+        placeholder='{"key": "value"}'
+        formControlName="body"
+      ></textarea>
+    </div>
+
+    <div>
+      <label class="block text-sm font-medium text-gray-700">Expected Body (JSON)</label>
+      <textarea
+        class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        rows="3"
+        placeholder='{"status": "ok"}'
+        formControlName="expectedBody"
+      ></textarea>
+    </div>
+
+    <div class="mt-2 flex justify-end gap-3">
+      <button
+        type="button"
+        class="rounded-lg border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50"
+        (click)="onEditDialogClosed()"
+      >
+        Cancel
+      </button>
+      <app-button
+        label="Save"
+        type="submit"
+        variant="primary"
+        [disabled]="formLoading()"
+        [loading]="formLoading()"
+      />
+    </div>
+  </form>
+</app-dialog>
+
+<!-- Delete confirmation dialog -->
+<app-dialog [open]="showDeleteDialog()" (closed)="onDeleteDialogClosed()">
+  <h2 class="text-lg font-semibold text-gray-900">Delete Endpoint</h2>
+  <p class="mt-2 text-sm text-gray-600">
+    Are you sure you want to delete
+    <span class="font-semibold text-gray-900">{{ selectedEndpoint()?.name }}</span>?
+    This action cannot be undone.
+  </p>
+
+  <div class="mt-6 flex justify-end gap-3">
+    <button
+      type="button"
+      class="rounded-lg border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50"
+      (click)="onDeleteDialogClosed()"
+    >
+      Cancel
+    </button>
+    <app-button
+      label="Delete"
+      variant="danger"
+      [disabled]="deleteLoading()"
+      [loading]="deleteLoading()"
+      (click)="onConfirmDelete()"
+    />
+  </div>
+</app-dialog>
